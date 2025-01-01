@@ -1,0 +1,149 @@
+<template>
+<div>
+    <div class="contents write">
+        <div>
+            <table class="table horizontal write">
+                <caption>안전보건 관계자 상세정보</caption>
+                <tbody>
+                    <tr>
+                        <th scope="row" class="w180"><label for="qlfc_knd">자격종류</label></th>
+                        <td>
+                            {{ viewModel.data.qlfc_knd }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="bplc_nm">현장명</label></th>
+                        <td>
+                            {{ viewModel.data.bplc_nm }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="user_nm">성명</label></th>
+                        <td>
+                            {{ viewModel.data.user_nm }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="apnt_dt">선임일자</label></th>
+                        <td>
+                            {{ viewModel.data.apnt_dt }}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="">선임계</label></th>
+                        <td>
+                            <!-- <fileform @filelist="fnFilelist"  @getFileInfo="fngetFileInfo" :pass="{id:'sc'}" ref="files"></fileform> -->
+                            <ul>
+                                <li v-for="(item,i) in viewModel.filelist" :key="i">
+                                    <button class="btn-link" @click="fnFileDown(item)" v-if="item.FILE_SE == '1'">{{ item.orgnl_file_nm }}</button>
+                                </li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="edu_nm">이수교육</label></th>
+                        <td>
+                            {{viewModel.data.edu_nm}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="vld_pd_dt">유효기간</label></th>
+                        <td>
+                            {{viewModel.data.vld_pd_bgnde}} ~ {{viewModel.data.vld_pd_endde}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th scope="row"><label for="">교육이수증</label></th>
+                        <td>
+                            <!-- <fileform @filelist="fnFilelist"  @getFileInfo="fngetFileInfo" :pass="{id:'sc'}" ref="files"></fileform> -->
+                            <ul>
+                                <li v-for="(item,i) in viewModel.filelist" :key="i">
+                                    <button class="btn-link" @click="fnFileDown(item)" v-if="item.FILE_SE == '2'">{{ item.orgnl_file_nm }}</button>
+                                </li>
+                            </ul>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="table_footer btn-right">
+                <router-link to="/" class="btn btn-white"><svg class="icon"><use xlink:href="../../img/symbol-defs.svg#icon-list-back"></use></svg>목록</router-link>
+            </div>
+        </div>
+    </div>
+    <dept ref="dept" v-if="deptPop==true" :pass="{group_id: viewModel.userInfo.user_group_id}"></dept>
+</div>
+</template>
+
+<script>
+    import "es6-promise/auto";
+    import Vue from "vue";
+    import Axios from "axios";
+    
+    export default {
+        data: function() {
+            return {
+                viewModel:{
+                    data:{
+                        clsf:'',
+                        fair_nm:'',
+                        usg:'',
+                        se:'',
+                    },
+                    userInfo:{},
+                    filelist:[],
+                }
+            };
+        },
+        components: {
+        },
+        mounted: function() {
+            let vm = this;
+            let sn = vm.$route.params.sn;
+
+            vm.viewModel.userInfo = vm.$store.state.global.userInfo;
+
+            vm.fnDetail(sn);
+        },
+        methods: {
+            fnDetail:function(sn){
+                let vm = this;
+                let data = {
+                    apnt_mng_sn: sn
+                }
+
+                Axios.post("/selectHsPsDetail.do", data)
+                .then(function(response) {
+                    vm.viewModel.data = response.data.detail;
+                    vm.viewModel.filelist = response.data.fileList;
+                });
+
+            },
+            fnFileDown:function(item){
+			let vm = this;
+			let send = {
+				menu_se: item.menu_se,
+				sn: item.sn,
+				file_sn: item.file_sn,
+				gbn:'hsps'
+			}
+
+            $(".loading").show();
+            $("#mask").show();
+
+			Axios.post("/download.do",send,{responseType: "blob",}
+			).then(function(e) {
+				const url = window.URL.createObjectURL(new Blob([e.data], { type: e.headers["content-type"] }))
+				const link = document.createElement("a")
+				link.href = url
+				link.download = item.orgnl_file_nm
+				link.click()
+				window.URL.revokeObjectURL(url)
+			}).then(function(){
+                $(".loading").hide();
+                $("#mask").hide();
+            });
+        },
+        }
+    };
+</script>
