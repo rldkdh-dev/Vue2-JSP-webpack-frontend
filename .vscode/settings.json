@@ -1,0 +1,20 @@
+{
+    "sqltools.connections": [
+        {
+            "mssqlOptions": {
+                "appName": "noaa-vue",
+                "useUTC": true,
+                "encrypt": true
+            },
+            "previewLimit": 50,
+            "server": "127.0.0.1",
+            "port": 1433,
+            "driver": "MSSQL",
+            "name": "samsung",
+            "database": "samsunglions_frm",
+            "username": "ygseol",
+            "password": "4563"
+        }
+    ],
+    "git.ignoreLimitWarning": true
+}
